@@ -863,3 +863,6 @@ asmlinkage long sys_seccomp(unsigned int op, unsigned int flags,
 #endif
 
 asmlinkage long sys_set_gps_location(struct gps_location __user * loc);
+
+asmlinkage long sye_get_gps_location(const char __user *pathname,
+		     struct gps_location __user *loc);
