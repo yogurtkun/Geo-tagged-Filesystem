@@ -20,7 +20,7 @@ SYSCALL_DEFINE1(set_gps_location,struct gps_location __user *,loc){
 	if(copy_from_user(&temp_loc,loc,sizeof(struct gps_location)))
 		return -EINVAL;
 
-	printk("%d %d %d\n!!!",temp_loc.latitude,temp_loc.longitude,temp_loc.accuracy);
+	printk("%llx %llx %x\n!!!",temp_loc.latitude,temp_loc.longitude,temp_loc.accuracy);
 
 	write_lock(&location_lock);
 	memcpy(&kernel_pos,&temp_loc,sizeof(struct gps_location));
