@@ -1154,7 +1154,7 @@ enum {
 	Opt_inode_readahead_blks, Opt_journal_ioprio,
 	Opt_dioread_nolock, Opt_dioread_lock,
 	Opt_discard, Opt_nodiscard, Opt_init_itable, Opt_noinit_itable,
-	Opt_max_dir_size_kb,
+	Opt_max_dir_size_kb,Opt_gps_aware_inode,
 };
 
 static const match_table_t tokens = {
@@ -1182,6 +1182,7 @@ static const match_table_t tokens = {
 	{Opt_noload, "noload"},
 	{Opt_removed, "nobh"},
 	{Opt_removed, "bh"},
+	{Opt_gps_aware_inode, "gps_aware_inode"},
 	{Opt_commit, "commit=%u"},
 	{Opt_min_batch_time, "min_batch_time=%u"},
 	{Opt_max_batch_time, "max_batch_time=%u"},
@@ -1430,7 +1431,8 @@ static const struct mount_opts {
 	{Opt_jqfmt_vfsv1, QFMT_VFS_V1, MOPT_QFMT},
 	{Opt_max_dir_size_kb, 0, MOPT_GTE0},
 	{Opt_test_dummy_encryption, 0, MOPT_GTE0},
-	{Opt_err, 0, 0}
+	{Opt_err, 0, 0},
+	{Opt_gps_aware_inode, EXT4_MOUNT_GPS_AWARE_INODE, MOPT_CLEAR }
 };
 
 static int handle_mount_opt(struct super_block *sb, char *opt, int token,
@@ -1462,6 +1464,9 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
 		return 1;	/* handled by get_sb_block() */
 	case Opt_removed:
 		ext4_msg(sb, KERN_WARNING, "Ignoring removed %s option", opt);
+		return 1;
+	case Opt_gps_aware_inode:
+		set_opt(sb,GPS_AWARE_INODE);
 		return 1;
 	case Opt_abort:
 		sbi->s_mount_flags |= EXT4_MF_FS_ABORTED;

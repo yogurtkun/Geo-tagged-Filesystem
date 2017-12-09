@@ -24,7 +24,7 @@ SYSCALL_DEFINE1(set_gps_location,struct gps_location __user *,loc){
 
 	write_lock(&location_lock);
 	memcpy(&kernel_pos,&temp_loc,sizeof(struct gps_location));
-	getnstimeofday(&pos_time);
+	pos_time = current_kernel_time();
 	write_unlock(&location_lock);
 
 	return 0;
