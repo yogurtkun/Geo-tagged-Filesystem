@@ -6,6 +6,7 @@
 #include <linux/slab.h>
 #include <linux/syscalls.h>
 #include <linux/time.h>
+#include <linux/fs.h>
 
 static struct gps_location kernel_pos;
 static struct timespec pos_time;
@@ -32,5 +33,13 @@ SYSCALL_DEFINE1(set_gps_location,struct gps_location __user *,loc){
 
 SYSCALL_DEFINE2(get_gps_location, const char __user *, pathname,
 		     struct gps_location __user *, loc){
+	return 0;
+}
+
+int set_gps_location_ext4(struct inode * now_node){
+	return 0;
+}
+
+int get_gps_location_ext4(struct inode * now_node, struct gps_location * location){
 	return 0;
 }
