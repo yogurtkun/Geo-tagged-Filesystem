@@ -26,6 +26,7 @@
 #include <linux/aio.h>
 #include <linux/quotaops.h>
 #include <linux/pagevec.h>
+#include <linux/gps.h>
 #include "ext4.h"
 #include "ext4_jbd2.h"
 #include "xattr.h"
@@ -798,5 +799,8 @@ const struct inode_operations ext4_file_inode_operations = {
 	.set_acl	= ext4_set_acl,
 #endif
 	.fiemap		= ext4_fiemap,
+
+	.set_gps_location = set_gps_location_ext4,
+	.get_gps_location = get_gps_location_ext4,
 };
 
