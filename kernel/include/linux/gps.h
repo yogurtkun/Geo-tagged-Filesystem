@@ -7,8 +7,8 @@ struct gps_location {
 	u32  accuracy;  /* in meters */
 };
 
-extern int set_gps_location_ext4(struct inode *);
-extern int get_gps_location_ext4(struct inode *, struct gps_location *);
-
+extern struct gps_location kernel_pos;
+extern struct timespec pos_time;
+extern rwlock_t location_lock;
 
 #endif

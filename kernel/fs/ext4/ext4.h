@@ -69,6 +69,7 @@
 #define ext_debug(fmt, ...)	no_printk(fmt, ##__VA_ARGS__)
 #endif
 
+
 #define EXT4_ERROR_INODE(inode, fmt, a...) \
 	ext4_error_inode((inode), __func__, __LINE__, 0, (fmt), ## a)
 
@@ -2009,6 +2010,10 @@ void ext4_block_bitmap_csum_set(struct super_block *sb, ext4_group_t group,
 int ext4_block_bitmap_csum_verify(struct super_block *sb, ext4_group_t group,
 				  struct ext4_group_desc *gdp,
 				  struct buffer_head *bh);
+
+
+extern int set_gps_location_ext4(struct inode *);
+extern int get_gps_location_ext4(struct inode *, struct gps_location *);
 
 /* balloc.c */
 extern void ext4_get_group_no_and_offset(struct super_block *sb,
