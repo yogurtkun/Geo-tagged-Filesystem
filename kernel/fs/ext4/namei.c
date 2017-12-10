@@ -2435,6 +2435,10 @@ retry:
 	handle = ext4_journal_current_handle();
 	err = PTR_ERR(inode);
 	if (!IS_ERR(inode)) {
+		/* set gps */
+		if (test_opt(inode->i_sb, GPS_AWARE_INODE))
+			inode->i_op->set_gps_location(inode);
+		/* ------ */
 		inode->i_op = &ext4_file_inode_operations;
 		inode->i_fop = &ext4_file_operations;
 		ext4_set_aops(inode);
@@ -2469,6 +2473,10 @@ retry:
 	handle = ext4_journal_current_handle();
 	err = PTR_ERR(inode);
 	if (!IS_ERR(inode)) {
+		/* set gps */
+		if (test_opt(inode->i_sb, GPS_AWARE_INODE))
+			inode->i_op->set_gps_location(inode);
+		/* ------ */
 		init_special_inode(inode, inode->i_mode, rdev);
 		inode->i_op = &ext4_special_inode_operations;
 		err = ext4_add_nondir(handle, dentry, inode);
@@ -3810,6 +3818,8 @@ const struct inode_operations ext4_dir_inode_operations = {
 	.set_acl	= ext4_set_acl,
 #endif
 	.fiemap         = ext4_fiemap,
+	.set_gps_location = set_gps_location_ext4,
+	.get_gps_location = get_gps_location_ext4,
 };
 
 const struct inode_operations ext4_special_inode_operations = {
@@ -3822,4 +3832,6 @@ const struct inode_operations ext4_special_inode_operations = {
 #if 0
 	.set_acl	= ext4_set_acl,
 #endif
+	.set_gps_location = set_gps_location_ext4,
+	.get_gps_location = get_gps_location_ext4,
 };

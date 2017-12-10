@@ -19,6 +19,7 @@
 #include <linux/ratelimit.h>
 #include <linux/aio.h>
 #include <linux/bitops.h>
+
 #include <linux/gps.h>
 
 #include "ext4_jbd2.h"
@@ -28,10 +29,93 @@
 
 #include <trace/events/ext4.h>
 
-int set_gps_location_ext4(struct inode * now_node){
-	return 0;
+// extern struct gps_location kernel_pos;
+// extern struct timespec pos_time;
+// extern rwlock_t location_lock;
+// 
+// struct gps_location {
+// 	u64 latitude;
+// 	u64 longitude;
+// 	u32  accuracy;  /* in meters */
+// };
+
+int set_gps_location_ext4(struct inode *inode)
+{
+	int error = 0;
+	struct ext4_iloc iloc;
+	struct ext4_inode *raw_inode;
+	/* TODO how should I specify that it is a 32-bit? */
+	int32_t coord_age;
+
+	/* get the raw inode */
+	error = ext4_get_inode_loc(inode, &iloc);
+	if (error)
+		goto skip_set;
+
+	raw_inode = ext4_raw_inode(&iloc);
+	if (!raw_inode) {
+		error = -ENODEV;
+		goto skip_set;
+	}
+
+	read_lock(&location_lock);
+	/* copy to raw_inode */
+	/* Q: whether raw inode need lock?
+	 * A: it seems that before calling the function, the lock will be set
+	 * */
+	/* TODO should i cast the type here? */
+	coord_age = current_kernel_time().tv_sec - pos_time.tv_sec;
+	// memcpy(&raw_inode->i_latitude, &kernel_pos.latitude, sizeof(raw_inode->i_latitude));
+	// memcpy(&raw_inode->i_longitude, &kernel_pos.longitude, sizeof(raw_inode->i_longitude));
+	// memcpy(&raw_inode->i_accuracy, &kernel_pos.accuracy, sizeof(raw_inode->i_accuracy));
+	// memcpy(&raw_inode->i_coord_age, &seconds, sizeof(raw_inode->i_coord_age));
+	raw_inode->i_latitude = cpu_to_le64(kernel_pos.latitude);
+	raw_inode->i_longitude = cpu_to_le64(kernel_pos.longitude);
+	raw_inode->i_accuracy = cpu_to_le32(kernel_pos.accuracy);
+	raw_inode->i_coord_age = cpu_to_le32(coord_age);
+	read_unlock(&location_lock);
+	
+	/* The common practice(s) */
+	brelse(iloc.bh);
+	ext4_set_inode_flags(inode);
+	unlock_new_inode(inode);
+	return error;
+skip_set:
+	brelse(iloc.bh);
+	iget_failed(inode);
+	return error;
 }
 
-int get_gps_location_ext4(struct inode * now_node, struct gps_location * location){
-	return 0;
+int get_gps_location_ext4(struct inode * inode, struct gps_location * location){
+	int ret = 0;
+	struct ext4_inode *raw_inode;
+	struct ext4_iloc iloc;
+
+	if (!test_opt(inode->i_sb, GPS_AWARE_INODE))
+		return -EOPNOTSUPP;
+
+	/* get the raw inode */
+	ret = ext4_get_inode_loc(inode, &iloc);
+	if (ret)
+		goto skip_get;
+
+	raw_inode = ext4_raw_inode(&iloc);
+	if (!raw_inode) {
+		ret = -ENODEV;
+		goto skip_get;
+	}
+
+	location->latitude = le64_to_cpu(raw_inode->i_latitude);
+	location->longitude = le64_to_cpu(raw_inode->i_longitude);
+	location->accuracy = le32_to_cpu(raw_inode->i_accuracy);
+	brelse(iloc.bh);
+	ext4_set_inode_flags(inode);
+	unlock_new_inode(inode);
+	return ret;
+
+skip_get:
+	brelse(iloc.bh);
+	iget_failed(inode);
+	return ret;
 }
+
