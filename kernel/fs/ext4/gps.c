@@ -39,83 +39,105 @@
 // 	u32  accuracy;  /* in meters */
 // };
 
-int set_gps_location_ext4(struct inode *inode)
-{
-	int error = 0;
-	struct ext4_iloc iloc;
-	struct ext4_inode *raw_inode;
-	/* TODO how should I specify that it is a 32-bit? */
-	int32_t coord_age;
+int set_gps_location_ext4(struct inode *inode){
+	struct ext4_inode_info *ei;
 
-	/* get the raw inode */
-	error = ext4_get_inode_loc(inode, &iloc);
-	if (error)
-		goto skip_set;
+	ei = EXT4_I(inode);
 
-	raw_inode = ext4_raw_inode(&iloc);
-	if (!raw_inode) {
-		error = -ENODEV;
-		goto skip_set;
-	}
+	write_lock(&ei->gps_lock);
+	memcpy(&ei->gps_info,&kernel_pos,sizeof(struct gps_location));
+	memcpy(&ei->gps_time,&pos_time,sizeof(struct timespec));
+	write_unlock(&ei->gps_lock);
 
-	read_lock(&location_lock);
-	/* copy to raw_inode */
-	/* Q: whether raw inode need lock?
-	 * A: it seems that before calling the function, the lock will be set
-	 * */
-	/* TODO should i cast the type here? */
-	coord_age = current_kernel_time().tv_sec - pos_time.tv_sec;
-	// memcpy(&raw_inode->i_latitude, &kernel_pos.latitude, sizeof(raw_inode->i_latitude));
-	// memcpy(&raw_inode->i_longitude, &kernel_pos.longitude, sizeof(raw_inode->i_longitude));
-	// memcpy(&raw_inode->i_accuracy, &kernel_pos.accuracy, sizeof(raw_inode->i_accuracy));
-	// memcpy(&raw_inode->i_coord_age, &seconds, sizeof(raw_inode->i_coord_age));
-	raw_inode->i_latitude = cpu_to_le64(kernel_pos.latitude);
-	raw_inode->i_longitude = cpu_to_le64(kernel_pos.longitude);
-	raw_inode->i_accuracy = cpu_to_le32(kernel_pos.accuracy);
-	raw_inode->i_coord_age = cpu_to_le32(coord_age);
-	read_unlock(&location_lock);
-	
-	/* The common practice(s) */
-	brelse(iloc.bh);
-	ext4_set_inode_flags(inode);
-	unlock_new_inode(inode);
-	return error;
-skip_set:
-	brelse(iloc.bh);
-	iget_failed(inode);
-	return error;
+	return 0;
 }
+
+// int set_gps_location_ext4(struct inode *inode)
+// {
+// 	int error = 0;
+// 	struct ext4_iloc iloc;
+// 	struct ext4_inode *raw_inode;
+// 	struct ext4_inode_info *ei;
+// 	/* TODO how should I specify that it is a 32-bit? */
+// 	int32_t coord_age;
+
+// 	/* get the raw inode */
+// 	error = ext4_get_inode_loc(inode, &iloc);
+// 	if (error)
+// 		goto skip_set;
+
+// 	raw_inode = ext4_raw_inode(&iloc);
+// 	if (!raw_inode) {
+// 		error = -ENODEV;
+// 		goto skip_set;
+// 	}
+
+// 	read_lock(&location_lock);
+// 	/* copy to raw_inode */
+// 	 Q: whether raw inode need lock?
+// 	 * A: it seems that before calling the function, the lock will be set
+// 	 * 
+// 	/* TODO should i cast the type here? */
+// 	coord_age = current_kernel_time().tv_sec - pos_time.tv_sec;
+// 	raw_inode->i_latitude = cpu_to_le64(kernel_pos.latitude);
+// 	raw_inode->i_longitude = cpu_to_le64(kernel_pos.longitude);
+// 	raw_inode->i_accuracy = cpu_to_le32(kernel_pos.accuracy);
+// 	raw_inode->i_coord_age = cpu_to_le32(coord_age);
+// 	read_unlock(&location_lock);
+	
+// 	/* The common practice(s) */
+// 	brelse(iloc.bh);
+// 	ext4_set_inode_flags(inode);
+// 	unlock_new_inode(inode);
+// 	return error;
+// skip_set:
+// 	brelse(iloc.bh);
+// 	iget_failed(inode);
+// 	return error;
+// }
 
 int get_gps_location_ext4(struct inode * inode, struct gps_location * location){
-	int ret = 0;
-	struct ext4_inode *raw_inode;
-	struct ext4_iloc iloc;
+	struct ext4_inode_info *ei;
 
-	if (!test_opt(inode->i_sb, GPS_AWARE_INODE))
-		return -EOPNOTSUPP;
+	ei = EXT4_I(inode);
 
-	/* get the raw inode */
-	ret = ext4_get_inode_loc(inode, &iloc);
-	if (ret)
-		goto skip_get;
+	read_lock(&ei->gps_lock);
+	memcpy(location,&ei->gps_info,sizeof(struct gps_location));
+	read_unlock(&ei->gps_lock);
 
-	raw_inode = ext4_raw_inode(&iloc);
-	if (!raw_inode) {
-		ret = -ENODEV;
-		goto skip_get;
-	}
-
-	location->latitude = le64_to_cpu(raw_inode->i_latitude);
-	location->longitude = le64_to_cpu(raw_inode->i_longitude);
-	location->accuracy = le32_to_cpu(raw_inode->i_accuracy);
-	brelse(iloc.bh);
-	ext4_set_inode_flags(inode);
-	unlock_new_inode(inode);
-	return ret;
-
-skip_get:
-	brelse(iloc.bh);
-	iget_failed(inode);
-	return ret;
+	return 0;	
 }
+
+// int get_gps_location_ext4(struct inode * inode, struct gps_location * location){
+// 	int ret = 0;
+// 	struct ext4_inode *raw_inode;
+// 	struct ext4_iloc iloc;
+
+// 	if (!test_opt(inode->i_sb, GPS_AWARE_INODE))
+// 		return -EOPNOTSUPP;
+
+// 	/* get the raw inode */
+// 	ret = ext4_get_inode_loc(inode, &iloc);
+// 	if (ret)
+// 		goto skip_get;
+
+// 	raw_inode = ext4_raw_inode(&iloc);
+// 	if (!raw_inode) {
+// 		ret = -ENODEV;
+// 		goto skip_get;
+// 	}
+
+// 	location->latitude = le64_to_cpu(raw_inode->i_latitude);
+// 	location->longitude = le64_to_cpu(raw_inode->i_longitude);
+// 	location->accuracy = le32_to_cpu(raw_inode->i_accuracy);
+// 	brelse(iloc.bh);
+// 	ext4_set_inode_flags(inode);
+// 	unlock_new_inode(inode);
+// 	return ret;
+
+// skip_get:
+// 	brelse(iloc.bh);
+// 	iget_failed(inode);
+// 	return ret;
+// }
 

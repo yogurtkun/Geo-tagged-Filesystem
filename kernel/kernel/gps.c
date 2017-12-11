@@ -8,7 +8,11 @@
 #include <linux/time.h>
 #include <linux/fs.h>
 
-struct gps_location kernel_pos;
+struct gps_location kernel_pos = {
+	.latitude = 0,
+	.longitude = 0,
+	.accuracy = 0,
+};
 struct timespec pos_time;
 DEFINE_RWLOCK(location_lock);
 

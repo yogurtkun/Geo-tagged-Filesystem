@@ -4017,6 +4017,8 @@ struct inode *ext4_iget(struct super_block *sb, unsigned long ino)
 	uid_t i_uid;
 	gid_t i_gid;
 
+	struct ext4_gps_inode *raw_gps_inode;
+
 	inode = iget_locked(sb, ino);
 	if (!inode)
 		return ERR_PTR(-ENOMEM);
@@ -4030,6 +4032,7 @@ struct inode *ext4_iget(struct super_block *sb, unsigned long ino)
 	if (ret < 0)
 		goto bad_inode;
 	raw_inode = ext4_raw_inode(&iloc);
+	raw_gps_inode = (struct ext4_gps_inode *) raw_inode;
 
 	if (EXT4_INODE_SIZE(inode->i_sb) > EXT4_GOOD_OLD_INODE_SIZE) {
 		ei->i_extra_isize = le16_to_cpu(raw_inode->i_extra_isize);
@@ -4077,6 +4080,21 @@ struct inode *ext4_iget(struct super_block *sb, unsigned long ino)
 	ei->i_inline_off = 0;
 	ei->i_dir_start_lookup = 0;
 	ei->i_dtime = le32_to_cpu(raw_inode->i_dtime);
+
+
+	/* Update the gps location information 
+	 * Question: How about the timestamp?
+	 */
+	if (test_opt(inode->i_sb, GPS_AWARE_INODE)){
+		write_lock(&ei->gps_lock);
+		ei->gps_info.latitude = le64_to_cpu(raw_gps_inode->i_latitude);
+		ei->gps_info.longitude = le64_to_cpu(raw_gps_inode->i_longitude);
+		ei->gps_info.accuracy = le32_to_cpu(raw_gps_inode->i_accuracy);
+
+		write_unlock(&ei->gps_lock);
+	}
+
+
 	/* We now have enough fields to check if the inode was active or not.
 	 * This is needed because nfsd might try to access dead inodes
 	 * the test is that same one that e2fsck uses
@@ -4301,6 +4319,21 @@ static int ext4_do_update_inode(handle_t *handle,
 	int need_datasync = 0, set_large_file = 0;
 	uid_t i_uid;
 	gid_t i_gid;
+
+	struct ext4_gps_inode *raw_gps_inode = (struct ext4_gps_inode *)raw_inode;
+	u32 coord_age;
+
+	/* Update the gps location information */
+	if (test_opt(inode->i_sb, GPS_AWARE_INODE)){
+		read_lock(&ei->gps_lock);
+		coord_age = current_kernel_time().tv_sec - ei->gps_time.tv_sec;
+		raw_gps_inode->i_latitude = cpu_to_le64(ei->gps_info.latitude);
+		raw_gps_inode->i_longitude = cpu_to_le64(ei->gps_info.longitude);
+		raw_gps_inode->i_accuracy = cpu_to_le32(ei->gps_info.accuracy);
+		raw_gps_inode->i_coord_age = cpu_to_le32(coord_age);
+
+		read_unlock(&ei->gps_lock);
+	}
 
 	spin_lock(&ei->i_raw_lock);
 
