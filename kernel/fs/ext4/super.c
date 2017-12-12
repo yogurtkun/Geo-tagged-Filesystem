@@ -5348,6 +5348,8 @@ static int ext4_quota_off(struct super_block *sb, int type)
 	if (IS_ERR(handle))
 		goto out;
 	inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+	if (test_opt(inode->i_sb, GPS_AWARE_INODE))
+		inode->i_op->set_gps_location(inode);
 	ext4_mark_inode_dirty(handle, inode);
 	ext4_journal_stop(handle);
 
