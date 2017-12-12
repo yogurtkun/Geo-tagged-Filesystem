@@ -2817,6 +2817,7 @@ int main (int argc, char *argv[])
 	set_com_err_gettext(gettext);
 #endif
 	PRS(argc, argv);
+	fs_param.s_feature_compat |= EXT4_FEATURE_COMPAT_GPS_AWARE;
 
 #ifdef CONFIG_TESTIO_DEBUG
 	if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_BLOCK")) {
