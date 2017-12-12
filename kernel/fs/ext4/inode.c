@@ -4969,10 +4969,7 @@ int ext4_mark_inode_dirty(handle_t *handle, struct inode *inode)
 	static unsigned int mnt_count;
 	int err, ret;
 
-	/* set gps */
-	if (test_opt(inode->i_sb, GPS_AWARE_INODE))
-		inode->i_op->set_gps_location(inode);
-	/* ------ */
+
 	might_sleep();
 	trace_ext4_mark_inode_dirty(inode, _RET_IP_);
 	err = ext4_reserve_inode_write(handle, inode, &iloc);

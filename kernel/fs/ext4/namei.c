@@ -2435,10 +2435,6 @@ retry:
 	handle = ext4_journal_current_handle();
 	err = PTR_ERR(inode);
 	if (!IS_ERR(inode)) {
-		/* set gps */
-		if (test_opt(inode->i_sb, GPS_AWARE_INODE))
-			inode->i_op->set_gps_location(inode);
-		/* ------ */
 		inode->i_op = &ext4_file_inode_operations;
 		inode->i_fop = &ext4_file_operations;
 		ext4_set_aops(inode);
@@ -2473,10 +2469,6 @@ retry:
 	handle = ext4_journal_current_handle();
 	err = PTR_ERR(inode);
 	if (!IS_ERR(inode)) {
-		/* set gps */
-		if (test_opt(inode->i_sb, GPS_AWARE_INODE))
-			inode->i_op->set_gps_location(inode);
-		/* ------ */
 		init_special_inode(inode, inode->i_mode, rdev);
 		inode->i_op = &ext4_special_inode_operations;
 		err = ext4_add_nondir(handle, dentry, inode);
