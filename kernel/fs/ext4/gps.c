@@ -116,36 +116,6 @@ int get_gps_location_ext4(struct inode * inode, struct gps_location * location){
 	return coord_age;	
 }
 
-// int get_gps_location_ext4(struct inode * inode, struct gps_location * location){
-// 	int ret = 0;
-// 	struct ext4_inode *raw_inode;
-// 	struct ext4_iloc iloc;
-
-// 	if (!test_opt(inode->i_sb, GPS_AWARE_INODE))
-// 		return -EOPNOTSUPP;
-
-// 	/* get the raw inode */
-// 	ret = ext4_get_inode_loc(inode, &iloc);
-// 	if (ret)
-// 		goto skip_get;
-
-// 	raw_inode = ext4_raw_inode(&iloc);
-// 	if (!raw_inode) {
-// 		ret = -ENODEV;
-// 		goto skip_get;
-// 	}
-
-// 	location->latitude = le64_to_cpu(raw_inode->i_latitude);
-// 	location->longitude = le64_to_cpu(raw_inode->i_longitude);
-// 	location->accuracy = le32_to_cpu(raw_inode->i_accuracy);
-// 	brelse(iloc.bh);
-// 	ext4_set_inode_flags(inode);
-// 	unlock_new_inode(inode);
-// 	return ret;
-
-// skip_get:
-// 	brelse(iloc.bh);
-// 	iget_failed(inode);
-// 	return ret;
-// }
-
+int gps_test_opt(struct inode *inode){
+	return test_opt(inode->i_sb, GPS_AWARE_INODE);
+}

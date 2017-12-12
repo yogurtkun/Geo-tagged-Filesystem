@@ -52,6 +52,8 @@ extern void __init inode_init(void);
 extern void __init inode_init_early(void);
 extern void __init files_init(unsigned long);
 
+extern int gps_test_opt(struct inode *inode);
+
 extern struct files_stat_struct files_stat;
 extern unsigned long get_max_files(void);
 extern int sysctl_nr_open;
