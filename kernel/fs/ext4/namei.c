@@ -1902,7 +1902,7 @@ static int add_dirent_to_buf(handle_t *handle, struct ext4_filename *fname,
 	 * and/or different from the directory change time.
 	 */
 	dir->i_mtime = dir->i_ctime = ext4_current_time(dir);
-	if (test_opt(dir->i_sb, GPS_AWARE_INODE))
+	if (test_opt(dir->i_sb, GPS_AWARE_INODE) && (dir->i_op) && (dir->i_op->set_gps_location))
 		dir->i_op->set_gps_location(dir);
 	ext4_update_dx_flag(dir);
 	dir->i_version++;
@@ -2952,9 +2952,9 @@ static int ext4_rmdir(struct inode *dir, struct dentry *dentry)
 	inode->i_size = 0;
 	ext4_orphan_add(handle, inode);
 	inode->i_ctime = dir->i_ctime = dir->i_mtime = ext4_current_time(inode);
-	if (test_opt(inode->i_sb, GPS_AWARE_INODE))
+	if (test_opt(inode->i_sb, GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
 		inode->i_op->set_gps_location(inode);
-	if (test_opt(dir->i_sb, GPS_AWARE_INODE))
+	if (test_opt(dir->i_sb, GPS_AWARE_INODE) && (dir->i_op) && (dir->i_op->set_gps_location))
 		dir->i_op->set_gps_location(dir);
 	ext4_mark_inode_dirty(handle, inode);
 	ext4_dec_count(handle, dir);
@@ -3016,7 +3016,7 @@ static int ext4_unlink(struct inode *dir, struct dentry *dentry)
 	if (retval)
 		goto end_unlink;
 	dir->i_ctime = dir->i_mtime = ext4_current_time(dir);
-	if (test_opt(dir->i_sb, GPS_AWARE_INODE))
+	if (test_opt(dir->i_sb, GPS_AWARE_INODE) && (dir->i_op) && (dir->i_op->set_gps_location))
 		dir->i_op->set_gps_location(dir);
 	ext4_update_dx_flag(dir);
 	ext4_mark_inode_dirty(handle, dir);
@@ -3024,7 +3024,7 @@ static int ext4_unlink(struct inode *dir, struct dentry *dentry)
 	if (!inode->i_nlink)
 		ext4_orphan_add(handle, inode);
 	inode->i_ctime = ext4_current_time(inode);
-	if (test_opt(inode->i_sb, GPS_AWARE_INODE))
+	if (test_opt(inode->i_sb, GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
 		inode->i_op->set_gps_location(inode);
 	ext4_mark_inode_dirty(handle, inode);
 	retval = 0;
@@ -3212,7 +3212,7 @@ retry:
 		ext4_handle_sync(handle);
 
 	inode->i_ctime = ext4_current_time(inode);
-	if (test_opt(inode->i_sb, GPS_AWARE_INODE))
+	if (test_opt(inode->i_sb, GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
 		inode->i_op->set_gps_location(inode);
 	ext4_inc_count(handle, inode);
 	ihold(inode);
@@ -3342,7 +3342,7 @@ static int ext4_setent(handle_t *handle, struct ext4_renament *ent,
 	ent->dir->i_version++;
 	ent->dir->i_ctime = ent->dir->i_mtime =
 		ext4_current_time(ent->dir);
-	if (test_opt(ent->dir->i_sb, GPS_AWARE_INODE))
+	if (test_opt(ent->dir->i_sb, GPS_AWARE_INODE) && (ent->dir->i_op) && (ent->dir->i_op->set_gps_location))
 		ent->dir->i_op->set_gps_location(ent->dir);
 	ext4_mark_inode_dirty(handle, ent->dir);
 	BUFFER_TRACE(ent->bh, "call ext4_handle_dirty_metadata");
@@ -3603,7 +3603,7 @@ static int ext4_rename(struct inode *old_dir, struct dentry *old_dentry,
 	 * rename.
 	 */
 	old.inode->i_ctime = ext4_current_time(old.inode);
-	if (test_opt(old.inode->i_sb, GPS_AWARE_INODE))
+	if (test_opt(old.inode->i_sb, GPS_AWARE_INODE) && (old.inode->i_op) && (old.inode->i_op->set_gps_location))
 		old.inode->i_op->set_gps_location(old.inode);
 	ext4_mark_inode_dirty(handle, old.inode);
 
@@ -3617,11 +3617,11 @@ static int ext4_rename(struct inode *old_dir, struct dentry *old_dentry,
 	if (new.inode) {
 		ext4_dec_count(handle, new.inode);
 		new.inode->i_ctime = ext4_current_time(new.inode);
-		if (test_opt(new.inode->i_sb, GPS_AWARE_INODE))
+		if (test_opt(new.inode->i_sb, GPS_AWARE_INODE) && (new.inode->i_op) && (new.inode->i_op->set_gps_location))
 			new.inode->i_op->set_gps_location(new.inode);
 	}
 	old.dir->i_ctime = old.dir->i_mtime = ext4_current_time(old.dir);
-	if (test_opt(old.dir->i_sb, GPS_AWARE_INODE))
+	if (test_opt(old.dir->i_sb, GPS_AWARE_INODE) && (old.inode->i_op) && (old.inode->i_op->set_gps_location))
 		old.dir->i_op->set_gps_location(old.dir);
 	ext4_update_dx_flag(old.dir);
 	if (old.dir_bh) {
@@ -3770,9 +3770,9 @@ static int ext4_cross_rename(struct inode *old_dir, struct dentry *old_dentry,
 	 */
 	old.inode->i_ctime = ext4_current_time(old.inode);
 	new.inode->i_ctime = ext4_current_time(new.inode);
-	if (test_opt(old.inode->i_sb, GPS_AWARE_INODE))
+	if (test_opt(old.inode->i_sb, GPS_AWARE_INODE) && (old.inode->i_op) && (old.inode->i_op->set_gps_location))
 		old.inode->i_op->set_gps_location(old.inode);
-	if (test_opt(new.inode->i_sb, GPS_AWARE_INODE))
+	if (test_opt(new.inode->i_sb, GPS_AWARE_INODE) && (new.inode->i_op) && (new.inode->i_op->set_gps_location))
 		new.inode->i_op->set_gps_location(new.inode);
 	ext4_mark_inode_dirty(handle, old.inode);
 	ext4_mark_inode_dirty(handle, new.inode);

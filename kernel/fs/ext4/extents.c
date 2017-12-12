@@ -4721,7 +4721,7 @@ retry:
 				ext4_set_inode_flag(inode,
 						    EXT4_INODE_EOFBLOCKS);
 		}
-		if (test_opt(inode->i_sb,GPS_AWARE_INODE))
+		if (test_opt(inode->i_sb,GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
 			inode->i_op->set_gps_location(inode); 
 		ext4_mark_inode_dirty(handle, inode);
 		ret2 = ext4_journal_stop(handle);
@@ -4832,7 +4832,7 @@ static long ext4_zero_range(struct file *file, loff_t offset,
 		/* Now release the pages and zero block aligned part of pages*/
 		truncate_pagecache_range(inode, start, end - 1);
 		inode->i_mtime = inode->i_ctime = ext4_current_time(inode);
-		if (test_opt(inode->i_sb,GPS_AWARE_INODE))
+		if (test_opt(inode->i_sb,GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
 			inode->i_op->set_gps_location(inode); 
 
 		/* Wait all existing dio workers, newcomers will block on i_mutex */
@@ -4885,8 +4885,8 @@ static long ext4_zero_range(struct file *file, loff_t offset,
 		if ((offset + len) > i_size_read(inode))
 			ext4_set_inode_flag(inode, EXT4_INODE_EOFBLOCKS);
 	}
-	if (test_opt(inode->i_sb,GPS_AWARE_INODE))
-		inode->i_op->set_gps_location(inode); 	
+	if (test_opt(inode->i_sb,GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
+		inode->i_op->set_gps_location(inode);
 	ext4_mark_inode_dirty(handle, inode);
 
 	/* Zero out partial block at the edges of the range */
@@ -5512,7 +5512,7 @@ int ext4_collapse_range(struct inode *inode, loff_t offset, loff_t len)
 	if (IS_SYNC(inode))
 		ext4_handle_sync(handle);
 	inode->i_mtime = inode->i_ctime = ext4_current_time(inode);
-	if (test_opt(inode->i_sb,GPS_AWARE_INODE))
+	if (test_opt(inode->i_sb,GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
 		inode->i_op->set_gps_location(inode); 	
 	ext4_mark_inode_dirty(handle, inode);
 

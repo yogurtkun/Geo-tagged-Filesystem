@@ -1169,7 +1169,7 @@ ext4_xattr_set_handle(handle_t *handle, struct inode *inode, int name_index,
 	if (!error) {
 		ext4_xattr_update_super_block(handle, inode->i_sb);
 		inode->i_ctime = ext4_current_time(inode);
-		if (test_opt(inode->i_sb, GPS_AWARE_INODE))
+		if (test_opt(inode->i_sb, GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
 			inode->i_op->set_gps_location(inode);
 		if (!value)
 			ext4_clear_inode_state(inode, EXT4_STATE_NO_EXPAND);

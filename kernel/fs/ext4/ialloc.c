@@ -1003,7 +1003,7 @@ got:
 	ei->i_dir_start_lookup = 0;
 	ei->i_disksize = 0;
 
-	if (test_opt(inode->i_sb,GPS_AWARE_INODE))
+	if (test_opt(inode->i_sb,GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
 		inode->i_op->set_gps_location(inode); 
 
 	/* Don't inherit extent flag from directory, amongst others. */
