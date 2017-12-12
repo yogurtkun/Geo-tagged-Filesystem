@@ -41,13 +41,15 @@
 
 int set_gps_location_ext4(struct inode *inode){
 	struct ext4_inode_info *ei;
+	int coord_age;
 
 	ei = EXT4_I(inode);
-
 	read_lock(&location_lock);
 	write_lock(&ei->gps_lock);
+	/* TODO should i cast the type here? */
+	coord_age = current_kernel_time().tv_sec - pos_time.tv_sec;
 	memcpy(&ei->gps_info,&kernel_pos,sizeof(struct gps_location));
-	memcpy(&ei->gps_time,&pos_time,sizeof(struct timespec));
+	memcpy(&ei->coord_age,&coord_age,sizeof(coord_age));
 	read_unlock(&location_lock);
 	write_unlock(&ei->gps_lock);
 

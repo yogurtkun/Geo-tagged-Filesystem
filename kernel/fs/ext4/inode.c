@@ -4096,6 +4096,7 @@ struct inode *ext4_iget(struct super_block *sb, unsigned long ino)
 		ei->gps_info.latitude = le64_to_cpu(raw_gps_inode->i_latitude);
 		ei->gps_info.longitude = le64_to_cpu(raw_gps_inode->i_longitude);
 		ei->gps_info.accuracy = le32_to_cpu(raw_gps_inode->i_accuracy);
+		ei->coord_age = le32_to_cpu(raw_gps_inode->i_coord_age);
 
 		write_unlock(&ei->gps_lock);
 	}
@@ -4327,16 +4328,14 @@ static int ext4_do_update_inode(handle_t *handle,
 	gid_t i_gid;
 
 	struct ext4_gps_inode *raw_gps_inode = (struct ext4_gps_inode *)raw_inode;
-	u32 coord_age;
 
 	/* Update the gps location information */
 	if (test_opt(inode->i_sb, GPS_AWARE_INODE)){
 		read_lock(&ei->gps_lock);
-		coord_age = current_kernel_time().tv_sec - ei->gps_time.tv_sec;
 		raw_gps_inode->i_latitude = cpu_to_le64(ei->gps_info.latitude);
 		raw_gps_inode->i_longitude = cpu_to_le64(ei->gps_info.longitude);
 		raw_gps_inode->i_accuracy = cpu_to_le32(ei->gps_info.accuracy);
-		raw_gps_inode->i_coord_age = cpu_to_le32(coord_age);
+		raw_gps_inode->i_coord_age = cpu_to_le32(ei->coord_age);
 
 		read_unlock(&ei->gps_lock);
 	}
