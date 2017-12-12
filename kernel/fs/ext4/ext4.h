@@ -1031,7 +1031,7 @@ struct ext4_inode_info {
 
 	rwlock_t gps_lock;
 	struct gps_location gps_info;
-	int coord_age;
+	u32 coord_age;
 };
 
 /*
