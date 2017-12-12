@@ -102,16 +102,18 @@ int set_gps_location_ext4(struct inode *inode){
 
 int get_gps_location_ext4(struct inode * inode, struct gps_location * location){
 	struct ext4_inode_info *ei;
+	u32 coord_age;
 
 	ei = EXT4_I(inode);
 
 	write_lock(&location_lock);
 	read_lock(&ei->gps_lock);
 	memcpy(location,&ei->gps_info,sizeof(struct gps_location));
+	memcpy(&coord_age, &ei->coord_age, sizeof(int));
 	write_unlock(&location_lock);
 	read_unlock(&ei->gps_lock);
 
-	return 0;	
+	return coord_age;	
 }
 
 // int get_gps_location_ext4(struct inode * inode, struct gps_location * location){
