@@ -1470,6 +1470,13 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
 		ext4_msg(sb, KERN_WARNING, "Ignoring removed %s option", opt);
 		return 1;
 	case Opt_gps_aware_inode:
+		if (!EXT4_HAS_COMPAT_FEATURE(sb,
+					EXT4_FEATURE_COMPAT_GPS_AWARE)) {
+			/* TODO check this behavior */
+			ext4_msg(sb, KERN_ERR,
+				"GPS feature is not compatible: %s", opt);
+			return -1;
+		}
 		set_opt(sb,GPS_AWARE_INODE);
 		return 1;
 	case Opt_abort:
