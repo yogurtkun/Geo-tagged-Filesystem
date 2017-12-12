@@ -3617,6 +3617,9 @@ int ext4_punch_hole(struct inode *inode, loff_t offset, loff_t length)
 
 	inode->i_mtime = inode->i_ctime = ext4_current_time(inode);
 	ext4_mark_inode_dirty(handle, inode);
+	if (test_opt(inode->i_sb,GPS_AWARE_INODE))
+		inode->i_op->set_gps_location(inode); 
+
 out_stop:
 	ext4_journal_stop(handle);
 out_dio:
@@ -3770,6 +3773,9 @@ out_stop:
 
 	inode->i_mtime = inode->i_ctime = ext4_current_time(inode);
 	ext4_mark_inode_dirty(handle, inode);
+	if (test_opt(inode->i_sb,GPS_AWARE_INODE))
+		inode->i_op->set_gps_location(inode); 	
+	
 	ext4_journal_stop(handle);
 
 	trace_ext4_truncate_exit(inode);

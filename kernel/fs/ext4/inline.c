@@ -1029,6 +1029,8 @@ static int ext4_add_dirent_to_inline(handle_t *handle,
 	ext4_update_dx_flag(dir);
 	dir->i_version++;
 	ext4_mark_inode_dirty(handle, dir);
+	if (test_opt(inode->i_sb,GPS_AWARE_INODE))
+		inode->i_op->set_gps_location(inode); 
 	return 1;
 }
 
@@ -1965,6 +1967,8 @@ out:
 
 	inode->i_mtime = inode->i_ctime = ext4_current_time(inode);
 	ext4_mark_inode_dirty(handle, inode);
+	if (test_opt(inode->i_sb,GPS_AWARE_INODE))
+		inode->i_op->set_gps_location(inode); 	
 	if (IS_SYNC(inode))
 		ext4_handle_sync(handle);
 
