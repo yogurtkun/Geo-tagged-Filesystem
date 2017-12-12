@@ -4721,9 +4721,9 @@ retry:
 				ext4_set_inode_flag(inode,
 						    EXT4_INODE_EOFBLOCKS);
 		}
-		ext4_mark_inode_dirty(handle, inode);
 		if (test_opt(inode->i_sb,GPS_AWARE_INODE))
 			inode->i_op->set_gps_location(inode); 
+		ext4_mark_inode_dirty(handle, inode);
 		ret2 = ext4_journal_stop(handle);
 		if (ret2)
 			break;
@@ -4885,9 +4885,9 @@ static long ext4_zero_range(struct file *file, loff_t offset,
 		if ((offset + len) > i_size_read(inode))
 			ext4_set_inode_flag(inode, EXT4_INODE_EOFBLOCKS);
 	}
-	ext4_mark_inode_dirty(handle, inode);
 	if (test_opt(inode->i_sb,GPS_AWARE_INODE))
 		inode->i_op->set_gps_location(inode); 	
+	ext4_mark_inode_dirty(handle, inode);
 
 	/* Zero out partial block at the edges of the range */
 	ret = ext4_zero_partial_blocks(handle, inode, offset, len);
@@ -5512,9 +5512,9 @@ int ext4_collapse_range(struct inode *inode, loff_t offset, loff_t len)
 	if (IS_SYNC(inode))
 		ext4_handle_sync(handle);
 	inode->i_mtime = inode->i_ctime = ext4_current_time(inode);
-	ext4_mark_inode_dirty(handle, inode);
 	if (test_opt(inode->i_sb,GPS_AWARE_INODE))
 		inode->i_op->set_gps_location(inode); 	
+	ext4_mark_inode_dirty(handle, inode);
 
 out_stop:
 	ext4_journal_stop(handle);
