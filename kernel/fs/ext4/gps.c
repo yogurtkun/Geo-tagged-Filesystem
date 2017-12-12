@@ -44,9 +44,11 @@ int set_gps_location_ext4(struct inode *inode){
 
 	ei = EXT4_I(inode);
 
+	read_lock(&location_lock);
 	write_lock(&ei->gps_lock);
 	memcpy(&ei->gps_info,&kernel_pos,sizeof(struct gps_location));
 	memcpy(&ei->gps_time,&pos_time,sizeof(struct timespec));
+	read_unlock(&location_lock);
 	write_unlock(&ei->gps_lock);
 
 	return 0;
@@ -101,8 +103,10 @@ int get_gps_location_ext4(struct inode * inode, struct gps_location * location){
 
 	ei = EXT4_I(inode);
 
+	write_lock(&location_lock);
 	read_lock(&ei->gps_lock);
 	memcpy(location,&ei->gps_info,sizeof(struct gps_location));
+	write_unlock(&location_lock);
 	read_unlock(&ei->gps_lock);
 
 	return 0;	
