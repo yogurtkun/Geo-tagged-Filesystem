@@ -55,11 +55,6 @@ SYSCALL_DEFINE2(get_gps_location, const char __user *, pathname,
 	if (res)
 		return -EINVAL;
 
-	if (!(inode->i_mode & S_IROTH) &&
-	    !( (inode->i_uid == current_uid()) && (inode->i_mode & S_IRUSR)) &&
-	    !( (inode->i_gid == current_gid()) && (inode->i_mode & S_IRGRP)) )
-		return -EACCES;
-
 	if (!gps_test_opt(inode) || !(inode->i_op)
 	    || !(inode->i_op->get_gps_location))
 		return -ENODEV;
