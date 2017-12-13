@@ -23,9 +23,9 @@ void daemon_mode(void)
 		exit(EXIT_FAILURE);
 	}
 
-	if (pid > 0) {
+	if (pid > 0) 
 		exit(EXIT_SUCCESS);
-	}
+
 
 	umask(0);
 
@@ -52,6 +52,7 @@ int read_gps_data(void)
 {
 	FILE *fout;
 	fout = fopen(GPS_LOCATION_FILE, "r");
+	
 	if (!fout) {
 		printf("File open failed\n");
 		return EXIT_FAILURE;
