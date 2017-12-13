@@ -4451,6 +4451,8 @@ static void ext4_falloc_update_inode(struct inode *inode,
 		now = current_fs_time(inode->i_sb);
 		if (!timespec_equal(&inode->i_ctime, &now))
 			inode->i_ctime = now;
+		if (test_opt(inode->i_sb,GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
+			inode->i_op->set_gps_location(inode);
 	}
 	/*
 	 * Update only when preallocation was requested beyond

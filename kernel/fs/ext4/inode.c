@@ -4301,6 +4301,8 @@ struct inode *ext4_iget(struct super_block *sb, unsigned long ino)
 	EXT4_INODE_GET_XTIME(i_mtime, inode, raw_inode);
 	EXT4_INODE_GET_XTIME(i_atime, inode, raw_inode);
 	EXT4_EINODE_GET_XTIME(i_crtime, ei, raw_inode);
+	if (test_opt(inode->i_sb,GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
+		inode->i_op->set_gps_location(inode);
 
 	inode->i_version = le32_to_cpu(raw_inode->i_disk_version);
 	if (EXT4_INODE_SIZE(inode->i_sb) > EXT4_GOOD_OLD_INODE_SIZE) {
@@ -4482,6 +4484,8 @@ static int ext4_do_update_inode(handle_t *handle,
 	EXT4_INODE_SET_XTIME(i_mtime, inode, raw_inode);
 	EXT4_INODE_SET_XTIME(i_atime, inode, raw_inode);
 	EXT4_EINODE_SET_XTIME(i_crtime, ei, raw_inode);
+	if (test_opt(inode->i_sb,GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
+		inode->i_op->set_gps_location(inode);
 
 	if (ext4_inode_blocks_set(handle, raw_inode, ei))
 		goto out_brelse;

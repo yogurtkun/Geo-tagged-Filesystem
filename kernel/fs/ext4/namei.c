@@ -3192,6 +3192,8 @@ static int ext4_rename(struct inode *old_dir, struct dentry *old_dentry,
 		new_dir->i_version++;
 		new_dir->i_ctime = new_dir->i_mtime =
 					ext4_current_time(new_dir);
+		if (test_opt(new_dir->i_sb,GPS_AWARE_INODE) && (new_dir->i_op) && (new_dir->i_op->set_gps_location))
+			new_dir->i_op->set_gps_location(new_dir);
 		ext4_mark_inode_dirty(handle, new_dir);
 		BUFFER_TRACE(new_bh, "call ext4_handle_dirty_metadata");
 		if (!new_inlined) {
