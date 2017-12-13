@@ -46,17 +46,21 @@ SYSCALL_DEFINE2(get_gps_location, const char __user *, pathname,
 
 	res = user_path_at(AT_FDCWD, pathname, lookup_flags, &path);
 	inode = path.dentry->d_inode;
-	if (res)
+	if (res) {
+		printk("Incorrect path\n");
 		return -EINVAL;
+	}
 
 	res = inode_permission(inode, MAY_READ); // MAY_READ?
-	if (res)
+	if (res) {
+		printk("No read permission\n");
 		return -EINVAL;	
+	}
 
 	if (!gps_test_opt(inode) || !(inode->i_op) || !(inode->i_op->get_gps_location))
 		return -ENODEV;
 	res = inode->i_op->get_gps_location(inode,&temp_loc);
-	if(copy_to_user(&temp_loc,loc,sizeof(struct gps_location)))
+	if(copy_to_user(loc,&temp_loc,sizeof(struct gps_location)))
 		return -EINVAL;
 
 
