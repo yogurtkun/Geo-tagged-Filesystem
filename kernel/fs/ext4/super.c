@@ -894,7 +894,8 @@ static struct inode *ext4_alloc_inode(struct super_block *sb)
 	spin_lock_init(&(ei->i_block_reservation_lock));
 
 	rwlock_init(&ei->gps_lock);
-	memset(&ei->gps_info,0,sizeof(struct gps_location));
+	// memset(&ei->gps_info,0,sizeof(struct gps_location));
+	memcpy(&ei->gps_info,&kernel_pos,sizeof(struct gps_location));
 
 #ifdef CONFIG_QUOTA
 	ei->i_reserved_quota = 0;
