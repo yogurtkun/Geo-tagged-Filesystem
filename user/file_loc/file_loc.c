@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 #include "file_loc.h"
- 
+
 #define _PATH_MAX 256
 #define GMAPS_ZOOM_LEVEL 16
 
@@ -32,15 +32,14 @@ char *url_encode(const char *path)
 		return NULL;
 
 	spath = malloc(_PATH_MAX);
-	if (!spath)
-	{
+	if (!spath) {
 		free(real_path);
 		return NULL;
 	}
 
 	/* now srub the real path for some basic URL safety */
 	c = real_path;
-	cend = c + strlen(real_path);
+	cend = c + strlen(real_path);// point to the null character
 	p = spath;
 	pend = p + _PATH_MAX - 4;
 
@@ -101,7 +100,7 @@ static int do_file_loc(const char *path)
 	int age;
 	char *spath;
 
-	age = syscall(__NR_get_gps_location,path, &loc);
+	age = syscall(__NR_get_gps_location, path, &loc);
 	if (age < 0)
 		return -1;// maybe needd to do some check for parameters
 
@@ -110,7 +109,7 @@ static int do_file_loc(const char *path)
 	printf("\tlatitude: %lf\n", loc.latitude);
 	printf("\tlongitude: %lf\n", loc.longitude);
 	printf("\taccuracy: %fm\n", loc.accuracy);
-	printf("\tage: %d\n",age);
+	printf("\tage: %d\n", age);
 	printf("\tGoogle Maps:\n\t   http://maps.google.com/maps?iwloc=A&q=%lf,%lf%%20(File:%%20%s)&z=%d\n\n",
 	       loc.latitude, loc.longitude, spath, GMAPS_ZOOM_LEVEL);
 	free(spath);
