@@ -14,20 +14,22 @@ struct gps_location kernel_pos = {
 	.longitude = 0,
 	.accuracy = 0,
 };
+
 struct timespec pos_time;
 DEFINE_RWLOCK(location_lock);
 
-SYSCALL_DEFINE1(set_gps_location,struct gps_location __user *,loc){
+SYSCALL_DEFINE1(set_gps_location, struct gps_location __user *, loc)
+{
 	struct gps_location temp_loc;
 
 	if (current_uid() != 0)
 		return -EACCES;
 
-	if(copy_from_user(&temp_loc,loc,sizeof(struct gps_location)))
+	if (copy_from_user(&temp_loc, loc, sizeof(struct gps_location)))
 		return -EINVAL;
 
 	write_lock(&location_lock);
-	memcpy(&kernel_pos,&temp_loc,sizeof(struct gps_location));
+	memcpy(&kernel_pos, &temp_loc, sizeof(struct gps_location));
 	pos_time = current_kernel_time();
 	write_unlock(&location_lock);
 
@@ -35,7 +37,7 @@ SYSCALL_DEFINE1(set_gps_location,struct gps_location __user *,loc){
 }
 
 SYSCALL_DEFINE2(get_gps_location, const char __user *, pathname,
-		     struct gps_location __user *, loc)
+		struct gps_location __user *, loc)
 {
 
 	struct path path;
@@ -46,21 +48,18 @@ SYSCALL_DEFINE2(get_gps_location, const char __user *, pathname,
 
 	res = user_path_at(AT_FDCWD, pathname, lookup_flags, &path);
 	inode = path.dentry->d_inode;
-	if (res) {
-		printk("Incorrect path\n");
+	if (res)
 		return -EINVAL;
-	}
 
-	res = inode_permission(inode, MAY_READ); // MAY_READ?
-	if (res) {
-		printk("No read permission\n");
-		return -EINVAL;	
-	}
+	res = inode_permission(inode, MAY_READ);
+	if (res)
+		return -EINVAL;
 
-	if (!gps_test_opt(inode) || !(inode->i_op) || !(inode->i_op->get_gps_location))
+	if (!gps_test_opt(inode) || !(inode->i_op)
+	    || !(inode->i_op->get_gps_location))
 		return -ENODEV;
-	res = inode->i_op->get_gps_location(inode,&temp_loc);
-	if(copy_to_user(loc,&temp_loc,sizeof(struct gps_location)))
+	res = inode->i_op->get_gps_location(inode, &temp_loc);
+	if (copy_to_user(loc, &temp_loc, sizeof(struct gps_location)))
 		return -EINVAL;
 
 

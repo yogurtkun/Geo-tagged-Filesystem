@@ -39,7 +39,7 @@ char *url_encode(const char *path)
 
 	/* now srub the real path for some basic URL safety */
 	c = real_path;
-	cend = c + strlen(real_path);// point to the null character
+	cend = c + strlen(real_path);
 	p = spath;
 	pend = p + _PATH_MAX - 4;
 
@@ -100,10 +100,10 @@ static int do_file_loc(const char *path)
 	int age;
 	char *spath;
 
-	age = syscall(__NR_get_gps_location,path, &loc);
+	age = syscall(__NR_get_gps_location, path, &loc);
 	if (age < 0) {
 		fprintf(stderr, "error: %s\n", strerror(errno));
-		return -1;// maybe needd to do some check for parameters
+		return -1;
 	}
 
 	spath = url_encode(path);
@@ -112,7 +112,9 @@ static int do_file_loc(const char *path)
 	printf("\tlongitude: %lf\n", loc.longitude);
 	printf("\taccuracy: %fm\n", loc.accuracy);
 	printf("\tage: %d\n", age);
-	printf("\tGoogle Maps:\n\t   http://maps.google.com/maps?iwloc=A&q=%lf,%lf%%20(File:%%20%s)&z=%d\n\n",
+	printf("\tGoogle Maps:\n\t   ");
+	printf("http://maps.google.com/maps?iwloc=A&q");
+	printf("=%lf,%lf%%20(File:%%20%s)&z=%d\n\n",
 	       loc.latitude, loc.longitude, spath, GMAPS_ZOOM_LEVEL);
 	free(spath);
 	return 0;
