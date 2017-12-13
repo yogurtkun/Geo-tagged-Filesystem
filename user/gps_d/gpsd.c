@@ -23,7 +23,7 @@ void daemon_mode(void)
 		exit(EXIT_FAILURE);
 	}
 
-	if (pid > 0) 
+	if (pid > 0)
 		exit(EXIT_SUCCESS);
 
 
@@ -51,23 +51,27 @@ void daemon_mode(void)
 int read_gps_data(void)
 {
 	FILE *fout;
+
 	fout = fopen(GPS_LOCATION_FILE, "r");
-	
 	if (!fout) {
 		printf("File open failed\n");
 		return EXIT_FAILURE;
 	}
 
 	struct gps_location loc;
-	int n = fscanf(fout, "%lf %lf %f", &loc.latitude, &loc.longitude, &loc.accuracy);
+	int n = fscanf(fout, "%lf %lf %f",
+					\ &loc.latitude,
+					\ &loc.longitude,
+					\ &loc.accuracy);
 	if (n != 3) {
 		printf("Read data from file failed\n");
 		fclose(fout);
 		return EXIT_FAILURE;
 	}
 
-	int ret = syscall(__NR_set_gps_location,&loc);
-	if (ret < 0){
+	int ret = syscall(__NR_set_gps_location, &loc);
+
+	if (ret < 0) {
 		printf("Write data to kernel failed\n");
 		fclose(fout);
 		return EXIT_FAILURE;
@@ -84,14 +88,14 @@ int main(int argc, char *argv[])
 	int err = 0;
 
 	daemon_mode();
-	while(1) {
+	while (1) {
 		err = read_gps_data();
-		if(err)
+		if (err)
 			break;
 		usleep(TIME_INTERVAL);
 	}
 
 	printf("Deamon process exit!\n");
-	
+
 	return err;
 }
