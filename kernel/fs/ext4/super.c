@@ -1550,7 +1550,7 @@ static const struct mount_opts {
 	{Opt_jqfmt_vfsv0, QFMT_VFS_V0, MOPT_QFMT},
 	{Opt_jqfmt_vfsv1, QFMT_VFS_V1, MOPT_QFMT},
 	{Opt_max_dir_size_kb, 0, MOPT_GTE0},
-	{Opt_err, 0, 0}
+	{Opt_err, 0, 0},
 	{Opt_gps_aware_inode, EXT4_MOUNT_GPS_AWARE_INODE, MOPT_CLEAR }
 };
 

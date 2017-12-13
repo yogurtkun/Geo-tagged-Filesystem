@@ -3238,7 +3238,6 @@ static int ext4_rename(struct inode *old_dir, struct dentry *old_dentry,
 			brelse(old_bh2);
 		}
 	}
-<<<<<<< HEAD
 	if (retval) {
 		ext4_warning(old_dir->i_sb,
 				"Deleting old file (%lu), %d, error=%d",
