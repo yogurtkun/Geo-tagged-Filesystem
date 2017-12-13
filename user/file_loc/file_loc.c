@@ -102,8 +102,10 @@ static int do_file_loc(const char *path)
 	char *spath;
 
 	age = syscall(__NR_get_gps_location,path, &loc);
-	if (age < 0)
+	if (age < 0) {
+		fprintf(stderr, "error: %s\n", strerror(errno));
 		return -1;// maybe needd to do some check for parameters
+	}
 
 	spath = url_encode(path);
 	printf("%s:\n", path);
