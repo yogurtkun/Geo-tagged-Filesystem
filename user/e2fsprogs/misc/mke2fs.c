@@ -1075,7 +1075,9 @@ static __u32 ok_features[3] = {
 		EXT2_FEATURE_COMPAT_RESIZE_INODE |
 		EXT2_FEATURE_COMPAT_DIR_INDEX |
 		EXT2_FEATURE_COMPAT_EXT_ATTR |
-		EXT4_FEATURE_COMPAT_SPARSE_SUPER2,
+		EXT4_FEATURE_COMPAT_SPARSE_SUPER2 |
+		EXT4_FEATURE_COMPAT_GPS_AWARE
+		,
 	/* Incompat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE|
 		EXT3_FEATURE_INCOMPAT_EXTENTS|
@@ -2815,6 +2817,7 @@ int main (int argc, char *argv[])
 	set_com_err_gettext(gettext);
 #endif
 	PRS(argc, argv);
+	fs_param.s_feature_compat |= EXT4_FEATURE_COMPAT_GPS_AWARE;
 
 #ifdef CONFIG_TESTIO_DEBUG
 	if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_BLOCK")) {

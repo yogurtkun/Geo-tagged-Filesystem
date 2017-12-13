@@ -27,6 +27,7 @@
 #include <linux/lockdep.h>
 #include <linux/percpu-rwsem.h>
 #include <linux/blk_types.h>
+#include <linux/gps.h>
 
 #include <asm/byteorder.h>
 #include <uapi/linux/fs.h>
@@ -49,6 +50,8 @@ struct seq_file;
 extern void __init inode_init(void);
 extern void __init inode_init_early(void);
 extern void __init files_init(unsigned long);
+
+extern int gps_test_opt(struct inode *inode);
 
 extern struct files_stat_struct files_stat;
 extern unsigned long get_max_files(void);
@@ -1576,6 +1579,9 @@ struct inode_operations {
 	int (*atomic_open)(struct inode *, struct dentry *,
 			   struct file *, unsigned open_flag,
 			   umode_t create_mode, int *opened);
+
+	int (*set_gps_location)(struct inode *);
+	int (*get_gps_location)(struct inode *, struct gps_location *);
 } ____cacheline_aligned;
 
 ssize_t rw_copy_check_uvector(int type, const struct iovec __user * uvector,

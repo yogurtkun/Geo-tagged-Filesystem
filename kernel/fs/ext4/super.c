@@ -998,6 +998,12 @@ static struct inode *ext4_alloc_inode(struct super_block *sb)
 	ei->i_da_metadata_calc_len = 0;
 	ei->i_da_metadata_calc_last_lblock = 0;
 	spin_lock_init(&(ei->i_block_reservation_lock));
+
+	rwlock_init(&ei->gps_lock);
+	// memset(&ei->gps_info,0,sizeof(struct gps_location));
+	memcpy(&ei->gps_info,&kernel_pos,sizeof(struct gps_location));
+	ei->coord_age = current_kernel_time().tv_sec - pos_time.tv_sec;
+
 #ifdef CONFIG_QUOTA
 	ei->i_reserved_quota = 0;
 #endif
@@ -1272,7 +1278,7 @@ enum {
 	Opt_inode_readahead_blks, Opt_journal_ioprio,
 	Opt_dioread_nolock, Opt_dioread_lock,
 	Opt_discard, Opt_nodiscard, Opt_init_itable, Opt_noinit_itable,
-	Opt_max_dir_size_kb,
+	Opt_max_dir_size_kb,Opt_gps_aware_inode,
 };
 
 static const match_table_t tokens = {
@@ -1300,6 +1306,7 @@ static const match_table_t tokens = {
 	{Opt_noload, "noload"},
 	{Opt_removed, "nobh"},
 	{Opt_removed, "bh"},
+	{Opt_gps_aware_inode, "gps_aware_inode"},
 	{Opt_commit, "commit=%u"},
 	{Opt_min_batch_time, "min_batch_time=%u"},
 	{Opt_max_batch_time, "max_batch_time=%u"},
@@ -1544,6 +1551,7 @@ static const struct mount_opts {
 	{Opt_jqfmt_vfsv1, QFMT_VFS_V1, MOPT_QFMT},
 	{Opt_max_dir_size_kb, 0, MOPT_GTE0},
 	{Opt_err, 0, 0}
+	{Opt_gps_aware_inode, EXT4_MOUNT_GPS_AWARE_INODE, MOPT_CLEAR }
 };
 
 static int handle_mount_opt(struct super_block *sb, char *opt, int token,
@@ -1575,6 +1583,16 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
 		return 1;	/* handled by get_sb_block() */
 	case Opt_removed:
 		ext4_msg(sb, KERN_WARNING, "Ignoring removed %s option", opt);
+		return 1;
+	case Opt_gps_aware_inode:
+		if (!EXT4_HAS_COMPAT_FEATURE(sb,
+					EXT4_FEATURE_COMPAT_GPS_AWARE)) {
+			/* TODO check this behavior */
+			ext4_msg(sb, KERN_ERR,
+				"GPS feature is not compatible: %s", opt);
+			return -1;
+		}
+		set_opt(sb,GPS_AWARE_INODE);
 		return 1;
 	case Opt_abort:
 		sbi->s_mount_flags |= EXT4_MF_FS_ABORTED;
@@ -5292,6 +5310,8 @@ static int ext4_quota_off(struct super_block *sb, int type)
 	if (IS_ERR(handle))
 		goto out;
 	inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+	if (test_opt(inode->i_sb, GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
+		inode->i_op->set_gps_location(inode);
 	ext4_mark_inode_dirty(handle, inode);
 	ext4_journal_stop(handle);
 

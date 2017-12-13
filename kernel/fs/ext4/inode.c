@@ -3751,7 +3751,10 @@ int ext4_punch_hole(struct file *file, loff_t offset, loff_t length)
 	if (IS_SYNC(inode))
 		ext4_handle_sync(handle);
 	inode->i_mtime = inode->i_ctime = ext4_current_time(inode);
+	if (test_opt(inode->i_sb,GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
+		inode->i_op->set_gps_location(inode); 
 	ext4_mark_inode_dirty(handle, inode);
+
 out_stop:
 	ext4_journal_stop(handle);
 out_dio:
@@ -3886,7 +3889,10 @@ out_stop:
 		ext4_orphan_del(handle, inode);
 
 	inode->i_mtime = inode->i_ctime = ext4_current_time(inode);
+	if (test_opt(inode->i_sb,GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
+		inode->i_op->set_gps_location(inode);
 	ext4_mark_inode_dirty(handle, inode);
+	
 	ext4_journal_stop(handle);
 
 	trace_ext4_truncate_exit(inode);
@@ -4134,6 +4140,8 @@ struct inode *ext4_iget(struct super_block *sb, unsigned long ino)
 	uid_t i_uid;
 	gid_t i_gid;
 
+	struct ext4_gps_inode *raw_gps_inode;
+
 	inode = iget_locked(sb, ino);
 	if (!inode)
 		return ERR_PTR(-ENOMEM);
@@ -4147,6 +4155,7 @@ struct inode *ext4_iget(struct super_block *sb, unsigned long ino)
 	if (ret < 0)
 		goto bad_inode;
 	raw_inode = ext4_raw_inode(&iloc);
+	raw_gps_inode = (struct ext4_gps_inode *) raw_inode;
 
 	if (EXT4_INODE_SIZE(inode->i_sb) > EXT4_GOOD_OLD_INODE_SIZE) {
 		ei->i_extra_isize = le16_to_cpu(raw_inode->i_extra_isize);
@@ -4195,6 +4204,22 @@ struct inode *ext4_iget(struct super_block *sb, unsigned long ino)
 	ei->i_inline_off = 0;
 	ei->i_dir_start_lookup = 0;
 	ei->i_dtime = le32_to_cpu(raw_inode->i_dtime);
+
+
+	/* Update the gps location information 
+	 * Question: How about the timestamp?
+	 */
+	if (test_opt(inode->i_sb, GPS_AWARE_INODE)){
+		write_lock(&ei->gps_lock);
+		ei->gps_info.latitude = le64_to_cpu(raw_gps_inode->i_latitude);
+		ei->gps_info.longitude = le64_to_cpu(raw_gps_inode->i_longitude);
+		ei->gps_info.accuracy = le32_to_cpu(raw_gps_inode->i_accuracy);
+		ei->coord_age = le32_to_cpu(raw_gps_inode->i_coord_age);
+
+		write_unlock(&ei->gps_lock);
+	}
+
+
 	/* We now have enough fields to check if the inode was active or not.
 	 * This is needed because nfsd might try to access dead inodes
 	 * the test is that same one that e2fsck uses
@@ -4408,6 +4433,17 @@ static int ext4_do_update_inode(handle_t *handle,
 	int need_datasync = 0;
 	uid_t i_uid;
 	gid_t i_gid;
+	struct ext4_gps_inode *raw_gps_inode = (struct ext4_gps_inode *)raw_inode;
+	if (test_opt(inode->i_sb, GPS_AWARE_INODE)){
+		read_lock(&ei->gps_lock);
+		raw_gps_inode->i_latitude = cpu_to_le64(ei->gps_info.latitude);
+		raw_gps_inode->i_longitude = cpu_to_le64(ei->gps_info.longitude);
+		raw_gps_inode->i_accuracy = cpu_to_le32(ei->gps_info.accuracy);
+		raw_gps_inode->i_coord_age = cpu_to_le32(ei->coord_age);
+
+		read_unlock(&ei->gps_lock);
+	}
+
 
 	/* For fields not not tracking in the in-memory inode,
 	 * initialise them to zero for new inodes. */
@@ -5010,6 +5046,7 @@ int ext4_mark_inode_dirty(handle_t *handle, struct inode *inode)
 	struct ext4_sb_info *sbi = EXT4_SB(inode->i_sb);
 	static unsigned int mnt_count;
 	int err, ret;
+
 
 	might_sleep();
 	trace_ext4_mark_inode_dirty(inode, _RET_IP_);

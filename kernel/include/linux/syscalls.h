@@ -78,6 +78,7 @@ struct sigaltstack;
 #include <linux/quota.h>
 #include <linux/key.h>
 #include <trace/syscall.h>
+#include <linux/gps.h>
 
 /*
  * __MAP - apply a macro to syscall arguments
@@ -857,3 +858,7 @@ asmlinkage long sys_finit_module(int fd, const char __user *uargs, int flags);
 asmlinkage long sys_seccomp(unsigned int op, unsigned int flags,
 			    const char __user *uargs);
 #endif
+
+asmlinkage long sys_set_gps_location(struct gps_location __user * loc);
+
+asmlinkage long sys_get_gps_location(const char __user *pathname, struct gps_location __user *loc);

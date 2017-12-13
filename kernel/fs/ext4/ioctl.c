@@ -172,6 +172,8 @@ static long swap_inode_boot_loader(struct super_block *sb,
 	swap_inode_data(inode, inode_bl);
 
 	inode->i_ctime = inode_bl->i_ctime = ext4_current_time(inode);
+	if (test_opt(inode->i_sb, GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
+		inode->i_op->set_gps_location(inode);
 
 	spin_lock(&sbi->s_next_gen_lock);
 	inode->i_generation = sbi->s_next_generation++;
@@ -312,6 +314,8 @@ long ext4_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 
 		ext4_set_inode_flags(inode);
 		inode->i_ctime = ext4_current_time(inode);
+		if (test_opt(inode->i_sb, GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
+			inode->i_op->set_gps_location(inode);
 
 		err = ext4_mark_iloc_dirty(handle, inode, &iloc);
 flags_err:
@@ -372,6 +376,8 @@ flags_out:
 		err = ext4_reserve_inode_write(handle, inode, &iloc);
 		if (err == 0) {
 			inode->i_ctime = ext4_current_time(inode);
+			if (test_opt(inode->i_sb, GPS_AWARE_INODE) && (inode->i_op) && (inode->i_op->set_gps_location))
+				inode->i_op->set_gps_location(inode);
 			inode->i_generation = generation;
 			err = ext4_mark_iloc_dirty(handle, inode, &iloc);
 		}
