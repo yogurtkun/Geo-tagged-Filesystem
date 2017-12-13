@@ -103,13 +103,14 @@ static int do_file_loc(const char *path)
 
 	age = syscall(__NR_get_gps_location,path, &loc);
 	if (age < 0)
-		return -1;
+		return -1;// maybe needd to do some check for parameters
 
 	spath = url_encode(path);
 	printf("%s:\n", path);
 	printf("\tlatitude: %lf\n", loc.latitude);
 	printf("\tlongitude: %lf\n", loc.longitude);
 	printf("\taccuracy: %fm\n", loc.accuracy);
+	printf("\tage: %d\n",age);
 	printf("\tGoogle Maps:\n\t   http://maps.google.com/maps?iwloc=A&q=%lf,%lf%%20(File:%%20%s)&z=%d\n\n",
 	       loc.latitude, loc.longitude, spath, GMAPS_ZOOM_LEVEL);
 	free(spath);
