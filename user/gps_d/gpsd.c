@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
 	/* deamon mode */
 	int err = 0;
 
+	daemon_mode();
 	while(1) {
 		err = read_gps_data();
 		if(err)
