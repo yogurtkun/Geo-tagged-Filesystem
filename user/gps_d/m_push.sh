@@ -1,2 +1,2 @@
 make
-adb push ../../build-emu/gps_d/test data/misc
+adb push ../../build-emu/gps_d/gpsd data/misc

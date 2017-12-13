@@ -58,7 +58,7 @@ int read_gps_data(void)
 	}
 
 	struct gps_location loc;
-	int n = fscanf(fout, "%f %f %f", &loc.latitude, &gps.longitude, &gps.accuracy);
+	int n = fscanf(fout, "%lf %lf %f", &loc.latitude, &loc.longitude, &loc.accuracy);
 	if (n != 3) {
 		printf("Read data from file failed\n");
 		fclose(fout);
