@@ -1,0 +1,27 @@
+# output of file_loc
+
+hmwk6/1.txt:
+	latitude: 40.811060
+	longitude: -73.961254
+	accuracy: 500.000000m
+	age: 123
+	Google Maps:
+	   http://maps.google.com/maps?iwloc=A&q=40.811060,-73.961254%20(File:%20%2F%3A%3B%3D%3F%40%20%22%3C%3E%23%25%7B%7D%7C%5C%5E%7E%5B%5D%60t)&z=16
+
+hmwk6/2.txt:
+	latitude: 40.811060
+	longitude: -73.961254
+	accuracy: 500.000000m
+	age: 0
+	Google Maps:
+	   http://maps.google.com/maps?iwloc=A&q=40.811060,-73.961254%20(File:%20%2F%3A%3B%3D%3F%40%20%22%3C%3E%23%25%7B%7D%7C%5C%5E%7E%5B%5D%60t)&z=16
+
+hmwk6/fa:
+	latitude: 40.811060
+	longitude: -73.961254
+	accuracy: 500.000000m
+	age: 448
+	Google Maps:
+	   http://maps.google.com/maps?iwloc=A&q=40.811060,-73.961254%20(File:%20%2F%3A%3B%3D%3F%40%20%22%3C%3E%23%25%7B%7D%7C%5C%5E%7E%5B%5D%60)&z=16
+
+
