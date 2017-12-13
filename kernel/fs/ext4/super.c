@@ -896,6 +896,7 @@ static struct inode *ext4_alloc_inode(struct super_block *sb)
 	rwlock_init(&ei->gps_lock);
 	// memset(&ei->gps_info,0,sizeof(struct gps_location));
 	memcpy(&ei->gps_info,&kernel_pos,sizeof(struct gps_location));
+	ei->coord_age = current_kernel_time().tv_sec - pos_time.tv_sec;
 
 #ifdef CONFIG_QUOTA
 	ei->i_reserved_quota = 0;
